@@ -190,7 +190,7 @@ rules:
     resources:
     - signers
     resourceNames:
-    - kubernetes.io/kubelet-serving
+    - beta.eks.amazonaws.com/app-serving
     verbs:
     - approve
 ---
