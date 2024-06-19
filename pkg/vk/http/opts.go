@@ -16,6 +16,8 @@
 
 package http
 
-const (
-	DefaultKubeletAddr = ":10250"
+import (
+	"os"
 )
+
+var DefaultKubeletAddr = os.Getenv("VKUBELET_PORT")

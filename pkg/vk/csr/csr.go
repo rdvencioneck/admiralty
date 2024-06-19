@@ -65,6 +65,11 @@ func GetCertificateFromKubernetesAPIServer(ctx context.Context, k kubernetes.Int
 	extendedUsage.Value, err = asn1.Marshal(asn1ExtendedUsages)
 	utilruntime.Must(errors.Wrap(err, "failed to asn1 encode extended usages"))
 
+	node_address := os.Getenv("NODE_IP")
+	if node_address == "" {
+		node_address = os.Getenv("VKUBELET_POD_IP")
+	}
+
 	csrTemplate := &x509.CertificateRequest{
 		Version:            3,
 		SignatureAlgorithm: x509.SHA256WithRSA,
@@ -74,7 +79,7 @@ func GetCertificateFromKubernetesAPIServer(ctx context.Context, k kubernetes.Int
 			Organization: []string{"system:nodes"},
 		},
 		ExtraExtensions: []pkix.Extension{usage, extendedUsage},
-		IPAddresses:     []net.IP{net.ParseIP(os.Getenv("VKUBELET_POD_IP"))},
+		IPAddresses:     []net.IP{net.ParseIP(node_address)},
 	}
 
 	csrDER, err := x509.CreateCertificateRequest(reader, csrTemplate, key)

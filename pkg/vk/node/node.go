@@ -28,6 +28,10 @@ import (
 )
 
 func NodeFromOpts(t agent.Target) *v1.Node {
+	node_address := os.Getenv("NODE_IP")
+	if node_address == "" {
+		node_address = os.Getenv("VKUBELET_POD_IP")
+	}
 	node := &v1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   t.VirtualNodeName,
@@ -78,7 +82,7 @@ func NodeFromOpts(t agent.Target) *v1.Node {
 			Addresses: []v1.NodeAddress{
 				{
 					Type:    "InternalIP",
-					Address: os.Getenv("VKUBELET_POD_IP"),
+					Address: node_address,
 				},
 			},
 			//DaemonEndpoints: v1.NodeDaemonEndpoints{

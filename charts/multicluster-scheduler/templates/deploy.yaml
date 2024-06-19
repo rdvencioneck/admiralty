@@ -35,10 +35,18 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: VKUBELET_PORT
+              value: {{ .Values.controllerManager.vkPort | quote }}
+            {{- if .Values.controllerManager.useNodeIP }}
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            {{- end }}
           image: {{ .Values.controllerManager.image.repository }}:{{ default .Chart.AppVersion .Values.controllerManager.image.tag }}
           ports:
               - containerPort: 9443
-              - containerPort: 10250
+              - containerPort: {{ .Values.controllerManager.vkPort }}
               - containerPort: 8080
           readinessProbe:
             httpGet:

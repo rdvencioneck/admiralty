@@ -34,6 +34,10 @@ controllerManager:
   # runAsNonRoot: true
   affinity: {}
   tolerations: []
+  # Whether to use NodeIP instead of the PodIP for the virtual kubelet
+  useNodeIP: false
+  # The port on which the virtual kubelet listens
+  vkPort: 10250
 
 scheduler:
   replicas: 2
