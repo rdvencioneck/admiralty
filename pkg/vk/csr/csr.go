@@ -90,7 +90,7 @@ func GetCertificateFromKubernetesAPIServer(ctx context.Context, k kubernetes.Int
 	csrK8s := &v1.CertificateSigningRequest{}
 	csrK8s.GenerateName = "admiralty-"
 	csrK8s.Spec.Usages = []v1.KeyUsage{v1.UsageKeyEncipherment, v1.UsageDigitalSignature, v1.UsageServerAuth}
-	csrK8s.Spec.SignerName = v1.KubeletServingSignerName
+	csrK8s.Spec.SignerName = "beta.eks.amazonaws.com/app-serving"
 	csrK8s.Spec.Request = csrPEM
 	csrK8s, err = k.CertificatesV1().CertificateSigningRequests().Create(ctx, csrK8s, metav1.CreateOptions{})
 	if err != nil {
