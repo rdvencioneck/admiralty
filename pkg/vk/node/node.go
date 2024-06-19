@@ -18,6 +18,7 @@ package node
 
 import (
 	"os"
+	"strconv"
 
 	"admiralty.io/multicluster-scheduler/pkg/config/agent"
 	v1 "k8s.io/api/core/v1"
@@ -32,6 +33,7 @@ func NodeFromOpts(t agent.Target) *v1.Node {
 	if node_address == "" {
 		node_address = os.Getenv("VKUBELET_POD_IP")
 	}
+	node_port, _ := strconv.Atoi(os.Getenv("VKUBELET_PORT"))
 	node := &v1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   t.VirtualNodeName,
@@ -85,11 +87,11 @@ func NodeFromOpts(t agent.Target) *v1.Node {
 					Address: node_address,
 				},
 			},
-			//DaemonEndpoints: v1.NodeDaemonEndpoints{
-			//	KubeletEndpoint: v1.DaemonEndpoint{
-			//		Port: int32(c.ListenPort),
-			//	},
-			//},
+			DaemonEndpoints: v1.NodeDaemonEndpoints{
+				KubeletEndpoint: v1.DaemonEndpoint{
+					Port: int32(node_port),
+				},
+			},
 		},
 	}
 	return node
