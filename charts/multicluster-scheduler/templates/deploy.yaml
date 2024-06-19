@@ -16,6 +16,9 @@ spec:
       labels: {{ include "labels" . | nindent 8 }}
         component: controller-manager
     spec:
+      {{- if .Values.controllerManager.useNodeIP }}
+      hostNetwork: true
+      {{- end }}
       containers:
         - name: controller-manager
           args: ["--leader-elect"]
