@@ -20,4 +20,4 @@ import (
 	"os"
 )
 
-var DefaultKubeletAddr = os.Getenv("VKUBELET_PORT")
+var DefaultKubeletAddr = ":" + os.Getenv("VKUBELET_PORT")
