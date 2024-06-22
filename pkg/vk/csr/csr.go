@@ -27,6 +27,7 @@ import (
 	"net"
 	"os"
 	"time"
+	"strings"
 
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/certificates/v1"
@@ -66,8 +67,12 @@ func GetCertificateFromKubernetesAPIServer(ctx context.Context, k kubernetes.Int
 	utilruntime.Must(errors.Wrap(err, "failed to asn1 encode extended usages"))
 
 	node_address := os.Getenv("NODE_IP")
+	node_dns := "admiralty"
 	if node_address == "" {
 		node_address = os.Getenv("VKUBELET_POD_IP")
+	}	else {
+		node_dns = strings.ReplaceAll(node_address, ".", "-")
+    node_dns = "ip-" + node_dns + ".ec2.internal"
 	}
 
 	csrTemplate := &x509.CertificateRequest{
@@ -75,11 +80,12 @@ func GetCertificateFromKubernetesAPIServer(ctx context.Context, k kubernetes.Int
 		SignatureAlgorithm: x509.SHA256WithRSA,
 		PublicKeyAlgorithm: x509.RSA,
 		Subject: pkix.Name{
-			CommonName:   "system:node:admiralty",
+			CommonName:   "system:node:" + node_dns,
 			Organization: []string{"system:nodes"},
 		},
 		ExtraExtensions: []pkix.Extension{usage, extendedUsage},
 		IPAddresses:     []net.IP{net.ParseIP(node_address)},
+		DNSNames:        []string{node_dns},
 	}
 
 	csrDER, err := x509.CreateCertificateRequest(reader, csrTemplate, key)
@@ -90,8 +96,10 @@ func GetCertificateFromKubernetesAPIServer(ctx context.Context, k kubernetes.Int
 	csrK8s := &v1.CertificateSigningRequest{}
 	csrK8s.GenerateName = "admiralty-"
 	csrK8s.Spec.Usages = []v1.KeyUsage{v1.UsageKeyEncipherment, v1.UsageDigitalSignature, v1.UsageServerAuth}
-	csrK8s.Spec.SignerName = "beta.eks.amazonaws.com/app-serving"
+	csrK8s.Spec.SignerName = "beta.eks.amazonaws.com/app-serving" //v1.KubeletServingSignerName
 	csrK8s.Spec.Request = csrPEM
+	csrK8s.Spec.Username = "system:node:" + node_dns
+	csrK8s.Spec.Groups = []string{"system:bootstrappers", "system:nodes", "system:authenticated"}
 	csrK8s, err = k.CertificatesV1().CertificateSigningRequests().Create(ctx, csrK8s, metav1.CreateOptions{})
 	if err != nil {
 		return nil, nil, err
