@@ -24,17 +24,10 @@ root_package=admiralty.io/multicluster-scheduler
 # optional
 VERSION="${VERSION:-dev}"
 
-if [ "$VERSION" = dev ] || [ "${CI:-}" = true ]; then
-  linux_archs=(amd64)
-else
-  linux_archs=(amd64 arm64 ppc64le s390x)
-fi
+linux_archs=(amd64)
 
 for arch in "${linux_archs[@]}"; do
   export ARCH=$arch
   PKG=$root_package/cmd/agent ./build/build_one.sh
-  PKG=$root_package/cmd/remove-finalizers ./build/build_one.sh
-  PKG=$root_package/cmd/restarter ./build/build_one.sh
-  PKG=$root_package/cmd/scheduler ./build/build_one.sh
   unset ARCH
 done
